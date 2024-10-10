@@ -1,0 +1,86 @@
+/* 1 */ 
+UPDATE PACIENTE p 
+SET p.PESO = 8.5
+WHERE p.ID_PACIENTE = 1
+
+/* 2 */
+UPDATE MEDICAMENTOS M
+SET M.ESTOQUE = 50
+WHERE M.ID_MEDICAMENTO = 3
+
+/* 3 */
+UPDATE TUTOR t 
+SET t.DATA_NASCIMENTO = '2001-05-15'
+WHERE t.ID_TUTOR = 2
+
+/* 4 */
+UPDATE AGENDAMENTO a 
+SET a.MOTIVO = 'Dor de barriga severa'
+WHERE a.ID_AGENDAMENTO = 5
+
+/* 5 */
+UPDATE MEDICAMENTOS M
+SET M.DESCRICAO = 'Anti-inflamatório para articulações'
+WHERE M.ID_MEDICAMENTO = 6
+
+/* 6 */
+UPDATE TUTOR t
+SET t.NOME = 'Maria Oliveira'
+WHERE t.ID_TUTOR = 3
+
+/* 7 */
+UPDATE MEDICAMENTOS m 
+SET m.DESCRICAO = 'Aplicar no olho afetado a cada 4 horas'
+WHERE ID_MEDICAMENTO = 2
+
+/* 8 */
+UPDATE TUTOR t
+SET t.ENDERECO = 'Rua dos Girassóis, 123'
+WHERE t.ID_TUTOR = 4
+
+/* 9 */
+DELETE FROM AGENDAMENTO a
+WHERE a.ID_AGENDAMENTO = 7
+
+/* 10 */
+DELETE FROM MEDICAMENTOS M
+WHERE M.ID_MEDICAMENTO = 8
+
+/* 11 */
+/*
+   esta operação não é permitida porque viola as chaves estrangeiras de AGENDAMENTO,
+   teria que deletar as consultas desses pacientes primeiro, mas há registros da tabela RECEITA
+   que dependem da tabela AGENDAMENTO, então tive que deletar primeiro de RECEITA, depois de 
+   AGENDAMENTO e só então de PACIENTE.
+*/
+DELETE FROM RECEITA r
+WHERE r.ID_AGENDAMENTO IN (SELECT a.ID_AGENDAMENTO FROM AGENDAMENTO a WHERE a.ID_PACIENTE IN (SELECT p.ID_PACIENTE FROM PACIENTE p WHERE p.ID_TUTOR = 5))
+
+DELETE FROM AGENDAMENTO a
+WHERE a.ID_PACIENTE IN (SELECT p.ID_PACIENTE FROM PACIENTE p WHERE p.ID_TUTOR = 5)
+
+DELETE FROM PACIENTE p
+WHERE p.ID_TUTOR = 5
+
+/* 12 */
+/* Todas as receitas possuem ID_AGENDAMENTO não nulo, logo estão relacionadas e nenhuma é deletada */
+/* Eu imaginei que teria que deletar os Itens da receita antes de deletar a receita em si por conta
+   da chave estrangeira que ITENSRECEITA possui */
+DELETE FROM ITENSRECEITA ir
+WHERE ir.ID_RECEITA IN (SELECT r.ID_RECEITA FROM RECEITA r WHERE r.ID_AGENDAMENTO IS NULL)
+
+DELETE FROM RECEITA r
+WHERE r.ID_AGENDAMENTO IS NULL
+
+/* 13 */
+/* Aqui eu também pensei neste assunto sobre a relação entre PACIENTE e TUTOR, mas não precisou
+   porque não há tutores que nasceram antes de 1987 */
+DELETE FROM PACIENTE p 
+WHERE p.ID_TUTOR IN (SELECT t.ID_TUTOR FROM tutor t WHERE t.DATA_NASCIMENTO < '1987-01-01')
+
+DELETE FROM TUTOR t
+WHERE t.DATA_NASCIMENTO < '1987-01-01'
+
+/* 14 */
+DELETE FROM ITENSRECEITA ir
+WHERE ir.ID_RECEITA BETWEEN 7 AND 9
